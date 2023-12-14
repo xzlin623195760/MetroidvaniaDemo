@@ -8,20 +8,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float walkSpeed = 1;
 
-    private float xAxis;
-    private float yAxis;
-
     [Header("Vertical Movement Settings"), Space(5)]
     [SerializeField]
     private float jumpForce = 45;
+
     [SerializeField]
     private int jumpBufferFrames;
+
     private int jumpBufferCounter = 0;
     [SerializeField]
     private float coyoteTime;
+
     private float coyoteTimeCounter = 0;
     [SerializeField]
     private int maxAirJumps;
+
     private int airJumpCounter = 0;
 
     private float gravity;
@@ -29,10 +30,13 @@ public class PlayerController : MonoBehaviour
     [Header("Dash Settings"), Space(5)]
     [SerializeField]
     private float dashSpeed;
+
     [SerializeField]
     private float dashTime;
+
     [SerializeField]
     private float dashCooldown;
+
     [SerializeField]
     private GameObject dashEffect;
 
@@ -42,24 +46,31 @@ public class PlayerController : MonoBehaviour
     [Header("Attack Settings"), Space(5)]
     [SerializeField]
     private Transform sideAttackTransform;
+
     [SerializeField]
     private Vector2 sideAttackArea;
+
     [SerializeField]
     private Transform upAttackTransform;
+
     [SerializeField]
     private Vector2 upAttackArea;
+
     [SerializeField]
     private Transform downAttackTransform;
+
     [SerializeField]
     private Vector2 downAttackArea;
+
     [SerializeField]
     private LayerMask attackLayer;
+
     [SerializeField]
     private float damage;
+
     [SerializeField]
     private GameObject slashEffect;
 
-    private bool attack = false;
     private float timeBetweenAttack;
     private float timeSinceAttack;
     private int upSlashAngle = 80;
@@ -68,10 +79,13 @@ public class PlayerController : MonoBehaviour
     [Header("Recoil Settings"), Space(5)]
     [SerializeField]
     private int recoilXSteps = 5;
+
     [SerializeField]
     private int recoilYSteps = 5;
+
     [SerializeField]
     private float recoilXSpeed = 100;
+
     [SerializeField]
     private float recoilYSpeed = 100;
 
@@ -81,34 +95,57 @@ public class PlayerController : MonoBehaviour
     [Header("Ground Check Settings"), Space(5)]
     [SerializeField]
     private Transform groundCheckPoint;
+
     [SerializeField]
     private float groundCheckX = 0.5f;
+
     [SerializeField]
     private float groundCheckY = 0.2f;
+
     [SerializeField]
     private LayerMask whatIsGround;
 
-    [Header("Health Settings"), Space(5)]
+    [Header("Health && Hurt Settings"), Space(5)]
     [SerializeField]
     public int health;
+
     [SerializeField]
     public int maxHealth;
+
     [SerializeField]
-    private float invincibleTime = 1f;
+    private float invincibleTime = 1f; // 受击无敌时间
+
     [SerializeField]
-    private GameObject bloodSpurt;
+    private GameObject bloodSpurt; //受击特效
+
+    [SerializeField]
+    private float hitFlashSpeed; //受击闪烁速度
+
+    private bool restoreTime; // 判断是否需要恢复时间
+    private float restoreSpeed; // 恢复时间速度
+
+    public delegate void OnHealthChangedDelegate();
+
+    [HideInInspector]
+    public OnHealthChangedDelegate OnHealthChangedCallback;
 
     [HideInInspector]
     public PlayerStateList pState;
-
     private Rigidbody2D rb;
-
+    private SpriteRenderer sr;
     private Animator anim;
+
+    // 动画参数
     private string walkingAnimParm = "Walking";
     private string jumpingAnimParm = "Jumping";
     private string dashingAniParm = "Dashing";
     private string attackingAniParm = "Attacking";
     private string takeDamageAniParm = "TakeDamage";
+
+    // 输入参数
+    private float xAxis;
+    private float yAxis;
+    private bool attack = false;
 
     public static PlayerController Instance;
 
@@ -137,6 +174,7 @@ public class PlayerController : MonoBehaviour
     {
         pState = GetComponent<PlayerStateList>();
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
 
         gravity = rb.gravityScale;
@@ -155,6 +193,8 @@ public class PlayerController : MonoBehaviour
         Jump();
         StartDash();
         Attack();
+        RestoreTimeScale();
+        FlashWhileVinciable();
     }
 
     private void FixedUpdate()
@@ -385,6 +425,10 @@ public class PlayerController : MonoBehaviour
             if (health != value)
             {
                 health = Mathf.Clamp(value, 0, maxHealth);
+                if (OnHealthChangedCallback != null)
+                {
+                    OnHealthChangedCallback.Invoke();
+                }
             }
         }
     }
@@ -403,6 +447,49 @@ public class PlayerController : MonoBehaviour
     {
         Health -= Mathf.RoundToInt(_damage);
         StartCoroutine(StopTakingDamage());
+    }
+
+    private void FlashWhileVinciable()
+    {
+        sr.material.color = pState.invincible ? Color.Lerp(Color.white, Color.black, Mathf.PingPong(Time.time * hitFlashSpeed, invincibleTime)) : Color.white;
+    }
+
+    private void RestoreTimeScale()
+    {
+        if (restoreTime)
+        {
+            if (Time.timeScale < 1)
+            {
+                Time.timeScale += Time.deltaTime * restoreSpeed;
+            }
+            else
+            {
+                Time.timeScale = 1;
+                restoreTime = false;
+            }
+        }
+    }
+
+    // 被击中时 时间减缓
+    public void HitStopTime(float _newTimeScale, int _restoreSpeed, float _delay)
+    {
+        restoreSpeed = _restoreSpeed;
+        if (_delay > 0)
+        {
+            StopCoroutine(StartTimeAgain(_delay));
+            StartCoroutine(StartTimeAgain(_delay));
+        }
+        else
+        {
+            restoreTime = true;
+        }
+        Time.timeScale = _newTimeScale;
+    }
+
+    private IEnumerator StartTimeAgain(float _delay)
+    {
+        restoreTime = true;
+        yield return new WaitForSeconds(_delay);
     }
 
     public bool Grounded()

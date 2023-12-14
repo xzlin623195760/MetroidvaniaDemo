@@ -6,11 +6,14 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     protected float health;
+
     [Header("Recoil Settings")]
     [SerializeField]
     protected float recoilLength;
+
     [SerializeField]
     protected float recoilFactor;
+
     [SerializeField]
     protected bool isRecoiling = false;
 
@@ -18,8 +21,10 @@ public class Enemy : MonoBehaviour
 
     [SerializeField]
     protected PlayerController player;
+
     [SerializeField]
     protected float speed;
+
     [SerializeField]
     protected float damage;
 
@@ -63,6 +68,7 @@ public class Enemy : MonoBehaviour
         if (_other.CompareTag("Player") && !PlayerController.Instance.pState.invincible)
         {
             Attack();
+            PlayerController.Instance.HitStopTime(0, 5, 0.5f);
         }
     }
 
