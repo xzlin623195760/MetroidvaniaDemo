@@ -1,134 +1,176 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
+    /*********************************** 水平方向移动 ********************************************/
     [Header("Horizontal Movement Settings")]
     [SerializeField]
-    private float walkSpeed = 1;
+    private float walkSpeed = 1; // 移动速度
 
+    /*********************************** 垂直方向移动 ********************************************/
     [Header("Vertical Movement Settings"), Space(5)]
     [SerializeField]
-    private float jumpForce = 45;
+    private float jumpForce = 45; // 跳跃速度
 
     [SerializeField]
-    private int jumpBufferFrames;
+    private int jumpBufferFrames; // 跳跃指令缓存帧数
+    private int jumpBufferCounter = 0; //跳跃指令缓存计数器
 
-    private int jumpBufferCounter = 0;
     [SerializeField]
-    private float coyoteTime;
+    private float coyoteTime; // 土狼时间
+    private float coyoteTimeCounter = 0; // 土狼时间计时器
 
-    private float coyoteTimeCounter = 0;
     [SerializeField]
-    private int maxAirJumps;
+    private int maxAirJumps; // 最大跳跃次数
+    private int airJumpCounter = 0; // 跳跃次数计数器
 
-    private int airJumpCounter = 0;
+    private float gravity; //存储重力
 
-    private float gravity;
-
+    /*********************************** 冲刺 ********************************************/
     [Header("Dash Settings"), Space(5)]
     [SerializeField]
-    private float dashSpeed;
+    private float dashSpeed; // 冲刺速度
 
     [SerializeField]
-    private float dashTime;
+    private float dashTime; // 冲刺时间
 
     [SerializeField]
-    private float dashCooldown;
+    private float dashCooldown; // 冲刺冷却时间
 
     [SerializeField]
-    private GameObject dashEffect;
+    private GameObject dashEffect; // 冲刺灰尘特效
 
-    private bool canDash = true;
-    private bool dashed;
+    private bool canDash = true; // 判断是否能冲刺
+    private bool dashed; // 冲刺是否结束
 
+    /*********************************** 攻击 ********************************************/
     [Header("Attack Settings"), Space(5)]
     [SerializeField]
-    private Transform sideAttackTransform;
+    private Transform sideAttackTransform; // 左右攻击框位置
 
     [SerializeField]
-    private Vector2 sideAttackArea;
+    private Vector2 sideAttackArea; // 左右攻击框尺寸
 
     [SerializeField]
-    private Transform upAttackTransform;
+    private Transform upAttackTransform; // 向上攻击框位置
 
     [SerializeField]
-    private Vector2 upAttackArea;
+    private Vector2 upAttackArea; // 向上攻击框尺寸
 
     [SerializeField]
-    private Transform downAttackTransform;
+    private Transform downAttackTransform; // 向下攻击框位置
 
     [SerializeField]
-    private Vector2 downAttackArea;
+    private Vector2 downAttackArea; // 向下攻击框尺寸
 
     [SerializeField]
-    private LayerMask attackLayer;
+    private LayerMask attackLayer; // 攻击检测对象层
 
     [SerializeField]
-    private float damage;
+    private float damage; // 攻击伤害值
 
     [SerializeField]
-    private GameObject slashEffect;
+    private GameObject slashEffect; // 刀光特效
+    private int upSlashAngle = 80; // 刀光特效角度
+    private int downSlashAngle = -90; // 刀光特效角度
 
-    private float timeBetweenAttack;
-    private float timeSinceAttack;
-    private int upSlashAngle = 80;
-    private int downSlashAngle = -90;
+    private float timeBetweenAttack; // 攻击间隔时间 防止单次攻击多段伤害
+    private float timeSinceAttack; // 攻击间隔时间计时器
 
+    /*********************************** 后座力 ********************************************/
     [Header("Recoil Settings"), Space(5)]
     [SerializeField]
-    private int recoilXSteps = 5;
+    private int recoilXSteps = 5; // 后座力持续时间
 
     [SerializeField]
     private int recoilYSteps = 5;
 
     [SerializeField]
-    private float recoilXSpeed = 100;
+    private float recoilXSpeed = 100; // 后座力速度
 
     [SerializeField]
     private float recoilYSpeed = 100;
 
-    private int stepsXRecoiled;
+    private int stepsXRecoiled; // 后座力时间计时器
     private int stepsYRecoiled;
 
+    /*********************************** 地面检测 ********************************************/
     [Header("Ground Check Settings"), Space(5)]
     [SerializeField]
-    private Transform groundCheckPoint;
+    private Transform groundCheckPoint; // 地面检测点
 
     [SerializeField]
-    private float groundCheckX = 0.5f;
+    private float groundCheckX = 0.5f; // 地面检测尺寸
 
     [SerializeField]
-    private float groundCheckY = 0.2f;
+    private float groundCheckY = 0.2f; // 地面检测尺寸
 
     [SerializeField]
-    private LayerMask whatIsGround;
+    private LayerMask whatIsGround; // 地面检测对象层
 
+    /*********************************** 生命和受伤 ********************************************/
     [Header("Health && Hurt Settings"), Space(5)]
     [SerializeField]
-    public int health;
+    public int health; // 当前生命值
 
     [SerializeField]
-    public int maxHealth;
+    public int maxHealth; // 最大生命值
 
     [SerializeField]
     private float invincibleTime = 1f; // 受击无敌时间
 
     [SerializeField]
-    private GameObject bloodSpurt; //受击特效
+    private GameObject bloodSpurt; // 受击特效
 
     [SerializeField]
-    private float hitFlashSpeed; //受击闪烁速度
+    private float hitFlashSpeed; // 受击闪烁速度
 
     private bool restoreTime; // 判断是否需要恢复时间
     private float restoreSpeed; // 恢复时间速度
 
+    [SerializeField]
+    private float timeToHeal; // 治愈时间
+    private float healTimer; // 治愈计时器
+
     public delegate void OnHealthChangedDelegate();
 
     [HideInInspector]
-    public OnHealthChangedDelegate OnHealthChangedCallback;
+    public OnHealthChangedDelegate OnHealthChangedCallback;  // 生命值变化回调 UI调用
 
+    /*********************************** 法力 ********************************************/
+    [Header("Mana Settings"), Space(5)]
+    [SerializeField]
+    private float mana; // 法力值
+    [SerializeField]
+    private float manaDrainSpeed; // 法力消耗速度
+    [SerializeField]
+    private float manaGain; // 法力获取值
+    [SerializeField]
+    private Image manaStorage;
+
+    /*********************************** 法术 ********************************************/
+    [Header("Spell Settings"), Space(5)]
+    [SerializeField]
+    private float manaSpellCast = 0.3f; // 法术所需法力消耗值
+    [SerializeField]
+    private float timeBetweenCast = 0.5f; // 防止无限释放法术
+    private float timeSinceCast;
+
+    [SerializeField]
+    private float spellDamage; // 该伤害仅用于上吼和下砸
+    [SerializeField]
+    private float downSpellForce; // 下砸速度
+
+    [SerializeField]
+    private GameObject sideSpellFireball;
+    [SerializeField]
+    private GameObject upSpellExplosion;
+    [SerializeField]
+    private GameObject downSpellFireball;
+    /*******************************************************************************/
     [HideInInspector]
     public PlayerStateList pState;
     private Rigidbody2D rb;
@@ -141,6 +183,8 @@ public class PlayerController : MonoBehaviour
     private string dashingAniParm = "Dashing";
     private string attackingAniParm = "Attacking";
     private string takeDamageAniParm = "TakeDamage";
+    private string healingAniParm = "Healing";
+    private string castingAniParm = "Casting";
 
     // 输入参数
     private float xAxis;
@@ -163,6 +207,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        // 攻击碰撞框编辑器
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(sideAttackTransform.position, sideAttackArea);
         Gizmos.DrawWireCube(upAttackTransform.position, upAttackArea);
@@ -179,6 +224,8 @@ public class PlayerController : MonoBehaviour
 
         gravity = rb.gravityScale;
         Health = maxHealth;
+        Mana = mana;
+        manaStorage.fillAmount = Mana;
     }
 
     // Update is called once per frame
@@ -195,12 +242,23 @@ public class PlayerController : MonoBehaviour
         Attack();
         RestoreTimeScale();
         FlashWhileVinciable();
+        Heal();
+        CastSpell();
     }
 
     private void FixedUpdate()
     {
         if (pState.dashing) return;
         Recoil();
+    }
+
+    private void OnTriggerEnter2D(Collider2D _other)
+    {
+        // 下砸和上吼的碰撞伤害
+        if (_other.GetComponent<Enemy>() != null && pState.casting)
+        {
+            _other.GetComponent<Enemy>().EnemyHit(spellDamage, (_other.transform.position - transform.position).normalized, -recoilYSpeed);
+        }
     }
 
     private void GetInputs()
@@ -348,10 +406,12 @@ public class PlayerController : MonoBehaviour
         {
             if (objectsToHit[i].GetComponent<Enemy>() != null)
             {
-                objectsToHit[i].GetComponent<Enemy>().EnemyHit(
-                    damage,
-                    (transform.position - objectsToHit[i].GetComponent<Enemy>().transform.position).normalized,
-                    _recoilStrength);
+                objectsToHit[i].GetComponent<Enemy>().EnemyHit
+                    (damage, (transform.position - objectsToHit[i].GetComponent<Enemy>().transform.position).normalized, _recoilStrength);
+                if (objectsToHit[i].CompareTag("Enemy"))
+                {
+                    Mana += manaGain;
+                }
             }
         }
     }
@@ -374,7 +434,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = 0;
             rb.velocity = yAxis < 0 ? new Vector2(rb.velocity.x, recoilYSpeed) : new Vector2(rb.velocity.x, -recoilYSpeed);
-            // TODO: 跳跃次数重置
+            // 跳跃次数重置
             airJumpCounter = 0;
         }
         else
@@ -492,6 +552,111 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(_delay);
     }
 
+    /// <summary>
+    /// 治愈
+    /// </summary>
+    /// <returns></returns>
+    private void Heal()
+    {
+        if (Input.GetButton("Healing") && Mana > 0 && Health < maxHealth && !pState.jumping && !pState.dashing)
+        {
+            pState.healing = true;
+            anim.SetBool(healingAniParm, true);
+
+            // 回复生命值
+            healTimer += Time.deltaTime;
+            if (healTimer >= timeToHeal)
+            {
+                healTimer = 0;
+                Health++;
+            }
+
+            // 消耗法力值
+            Mana -= manaDrainSpeed * Time.deltaTime;
+        }
+        else
+        {
+            pState.healing = false;
+            healTimer = 0;
+            anim.SetBool(healingAniParm, false);
+        }
+    }
+
+    private float Mana
+    {
+        get { return mana; }
+        set
+        {
+            if (mana != value)
+            {
+                mana = Mathf.Clamp(value, 0, 1);
+                manaStorage.fillAmount = mana;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 释放法术
+    /// </summary>
+    private void CastSpell()
+    {
+        if (Input.GetButtonDown("CastSpell") && timeSinceCast >= timeBetweenCast && Mana >= manaSpellCast)
+        {
+            pState.casting = true;
+            timeSinceCast = 0;
+            StartCoroutine(CastCoroutine());
+        }
+        else
+        {
+            timeSinceCast += Time.deltaTime;
+        }
+
+        if (Grounded())
+        {
+            downSpellFireball.SetActive(false);
+        }
+        // 处于下砸期间 下落速度转化为下砸速度
+        if (downSpellFireball.activeInHierarchy)
+        {
+            rb.velocity += downSpellForce * Vector2.down;
+        }
+    }
+
+    private IEnumerator CastCoroutine()
+    {
+        anim.SetBool(castingAniParm, true);
+        // 在动画的n秒处释放
+        yield return new WaitForSeconds(0.15f);
+
+        if (yAxis == 0 || (yAxis < 0 && Grounded()))
+        {
+            GameObject _fireball = Instantiate(sideSpellFireball, sideAttackTransform.position, Quaternion.identity);
+            // 翻转火球
+            _fireball.transform.eulerAngles = pState.lookingRight ? Vector3.zero : new Vector2(_fireball.transform.eulerAngles.x, 180);
+            // 加上后座力
+            pState.recoilingX = true;
+        }
+        else if (yAxis > 0)
+        {
+            Instantiate(upSpellExplosion, transform);
+            rb.velocity = Vector2.zero;
+        }
+        else if (yAxis < 0 && !Grounded())
+        {
+            downSpellFireball.SetActive(true);
+        }
+        //消耗法力
+        Mana -= manaSpellCast;
+        yield return new WaitForSeconds(0.35f);
+
+        anim.SetBool(castingAniParm, false);
+        pState.casting = false;
+    }
+
+    /// <summary>
+    /// 是否在地面
+    /// </summary>
+    /// <returns></returns>
     public bool Grounded()
     {
         if (Physics2D.Raycast(groundCheckPoint.position, Vector2.down, groundCheckY, whatIsGround)
