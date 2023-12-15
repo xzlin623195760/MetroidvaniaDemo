@@ -5,6 +5,20 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
+    /*********************************** 地面检测 ********************************************/
+    [Header("Ground Check Settings"), Space(5)]
+    [SerializeField]
+    private Transform groundCheckPoint; // 地面检测点
+
+    [SerializeField]
+    private float groundCheckX = 0.5f; // 地面检测尺寸
+
+    [SerializeField]
+    private float groundCheckY = 0.2f; // 地面检测尺寸
+
+    [SerializeField]
+    private LayerMask whatIsGround; // 地面检测对象层
+
     /*********************************** 水平方向移动 ********************************************/
     [Header("Horizontal Movement Settings")]
     [SerializeField]
@@ -14,6 +28,9 @@ public class PlayerController : MonoBehaviour
     [Header("Vertical Movement Settings"), Space(5)]
     [SerializeField]
     private float jumpForce = 45; // 跳跃速度
+
+    [SerializeField]
+    private float minJumpSpeed = 3; // 最小跳跃速度
 
     [SerializeField]
     private int jumpBufferFrames; // 跳跃指令缓存帧数
@@ -97,20 +114,6 @@ public class PlayerController : MonoBehaviour
     private int stepsXRecoiled; // 后座力时间计时器
     private int stepsYRecoiled;
 
-    /*********************************** 地面检测 ********************************************/
-    [Header("Ground Check Settings"), Space(5)]
-    [SerializeField]
-    private Transform groundCheckPoint; // 地面检测点
-
-    [SerializeField]
-    private float groundCheckX = 0.5f; // 地面检测尺寸
-
-    [SerializeField]
-    private float groundCheckY = 0.2f; // 地面检测尺寸
-
-    [SerializeField]
-    private LayerMask whatIsGround; // 地面检测对象层
-
     /*********************************** 生命和受伤 ********************************************/
     [Header("Health && Hurt Settings"), Space(5)]
     [SerializeField]
@@ -170,6 +173,11 @@ public class PlayerController : MonoBehaviour
     private GameObject upSpellExplosion;
     [SerializeField]
     private GameObject downSpellFireball;
+
+    [SerializeField]
+    private float castBtnUpTime = 0.05f; // 法术键松开判定时间
+    private float castOrHealTimer; // 法术键按下的时间计时器
+
     /*******************************************************************************/
     [HideInInspector]
     public PlayerStateList pState;
@@ -203,6 +211,7 @@ public class PlayerController : MonoBehaviour
         {
             Instance = this;
         }
+        DontDestroyOnLoad(gameObject);
     }
 
     private void OnDrawGizmos()
@@ -266,6 +275,15 @@ public class PlayerController : MonoBehaviour
         xAxis = Input.GetAxisRaw("Horizontal");
         yAxis = Input.GetAxisRaw("Vertical");
         attack = Input.GetButtonDown("Attack");
+
+        if (Input.GetButton("Cast/Heal"))
+        {
+            castOrHealTimer += Time.deltaTime;
+        }
+        else
+        {
+            castOrHealTimer = 0;
+        }
     }
 
     private void Flip()
@@ -308,7 +326,8 @@ public class PlayerController : MonoBehaviour
         pState.dashing = true;
         anim.SetTrigger(dashingAniParm);
         rb.gravityScale = 0;
-        rb.velocity = new Vector2(transform.localScale.x * dashSpeed, 0);
+        int _dir = pState.lookingRight ? 1 : -1;
+        rb.velocity = new Vector2(_dir * dashSpeed, 0);
         if (Grounded() && dashEffect != null)
         {
             Instantiate(dashEffect, transform);
@@ -322,27 +341,23 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        if (Input.GetButtonUp("Jump") && rb.velocity.y > 0)
+        if (jumpBufferCounter > 0 && coyoteTimeCounter > 0 && !pState.jumping)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            pState.jumping = true;
+        }
+
+        if (!Grounded() && airJumpCounter < maxAirJumps && Input.GetButtonDown("Jump"))
+        {
+            pState.jumping = true;
+            airJumpCounter++;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        }
+        if (Input.GetButtonUp("Jump") && rb.velocity.y > minJumpSpeed)
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
             pState.jumping = false;
         }
-
-        if (!pState.jumping)
-        {
-            if (jumpBufferCounter > 0 && coyoteTimeCounter > 0)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                pState.jumping = true;
-            }
-            else if (!Grounded() && airJumpCounter < maxAirJumps && Input.GetButtonDown("Jump"))
-            {
-                pState.jumping = true;
-                airJumpCounter++;
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            }
-        }
-
         anim.SetBool(jumpingAnimParm, !Grounded());
     }
 
@@ -558,8 +573,10 @@ public class PlayerController : MonoBehaviour
     /// <returns></returns>
     private void Heal()
     {
-        if (Input.GetButton("Healing") && Mana > 0 && Health < maxHealth && !pState.jumping && !pState.dashing)
+        if (Input.GetButton("Cast/Heal") && castOrHealTimer > castBtnUpTime && Mana > 0 && Health < maxHealth && !pState.jumping && !pState.dashing)
         {
+            Debug.Log($"castTimer {castOrHealTimer}");
+
             pState.healing = true;
             anim.SetBool(healingAniParm, true);
 
@@ -600,8 +617,9 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void CastSpell()
     {
-        if (Input.GetButtonDown("CastSpell") && timeSinceCast >= timeBetweenCast && Mana >= manaSpellCast)
+        if (Input.GetButtonUp("Cast/Heal") && castOrHealTimer <= castBtnUpTime && timeSinceCast >= timeBetweenCast && Mana >= manaSpellCast)
         {
+            Debug.Log($"castTimer {castOrHealTimer}");
             pState.casting = true;
             timeSinceCast = 0;
             StartCoroutine(CastCoroutine());
