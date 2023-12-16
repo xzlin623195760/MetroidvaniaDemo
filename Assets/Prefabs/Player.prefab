@@ -54,7 +54,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: c3120e90a96874943a6a085360a04df8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -460,6 +460,7 @@ MonoBehaviour:
   invincible: 0
   healing: 0
   casting: 0
+  cutScene: 0
 --- !u!1 &1323856143272888951
 GameObject:
   m_ObjectHideFlags: 0

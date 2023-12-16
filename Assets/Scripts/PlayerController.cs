@@ -129,7 +129,10 @@ public class PlayerController : MonoBehaviour
     private GameObject bloodSpurt; // 受击特效
 
     [SerializeField]
-    private float hitFlashSpeed; // 受击闪烁速度
+    private bool canFlash = true; // 是否开启闪烁
+
+    [SerializeField]
+    private float flashSpeed = 0.1f; // 闪烁速度
 
     private bool restoreTime; // 判断是否需要恢复时间
     private float restoreSpeed; // 恢复时间速度
@@ -529,7 +532,25 @@ public class PlayerController : MonoBehaviour
 
     private void FlashWhileVinciable()
     {
-        sr.material.color = pState.invincible ? Color.Lerp(Color.white, Color.black, Mathf.PingPong(Time.time * hitFlashSpeed, invincibleTime)) : Color.white;
+        if (pState.invincible)
+        {
+            if (Time.timeScale > 0.2 && canFlash)
+            {
+                StartCoroutine(Flash());
+            }
+        }
+        else
+        {
+            sr.enabled = true;
+        }
+    }
+
+    private IEnumerator Flash()
+    {
+        sr.enabled = !sr.enabled;
+        canFlash = false;
+        yield return new WaitForSeconds(flashSpeed);
+        canFlash = true;
     }
 
     private void RestoreTimeScale()
