@@ -72,9 +72,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1538195209
+  m_SortingLayer: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 2c961366528f28c458c619797d0bbb2f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -296,9 +296,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingLayerID: 1538195209
+  m_SortingLayer: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 84ce2f114ad12bd4ebafc77060220324, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -369,8 +369,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f87007ea44800314ca1d09c79a6bb5e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  groundCheckPoint: {fileID: 1323856143272888948}
+  groundCheckX: 0.5
+  groundCheckY: 0.2
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 8
   walkSpeed: 20
   jumpForce: 45
+  minJumpSpeed: 3
   jumpBufferFrames: 8
   coyoteTime: 0.1
   maxAirJumps: 1
@@ -393,12 +400,6 @@ MonoBehaviour:
   recoilYSteps: 5
   recoilXSpeed: 32
   recoilYSpeed: 32
-  groundCheckPoint: {fileID: 1323856143272888948}
-  groundCheckX: 0.5
-  groundCheckY: 0.2
-  whatIsGround:
-    serializedVersion: 2
-    m_Bits: 8
   health: 0
   maxHealth: 10
   invincibleTime: 1
@@ -416,6 +417,7 @@ MonoBehaviour:
   sideSpellFireball: {fileID: 8810267006358859021, guid: 1577d202076e1d849aa8ef85ecf1aed9, type: 3}
   upSpellExplosion: {fileID: 8315502742519807347, guid: 2e61f1aeca6361e448106f80d9531e39, type: 3}
   downSpellFireball: {fileID: 1323856141616915164}
+  castBtnUpTime: 0.05
   pState: {fileID: 0}
 --- !u!95 &1323856142683473205
 Animator:

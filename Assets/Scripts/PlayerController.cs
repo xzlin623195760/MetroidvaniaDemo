@@ -240,10 +240,12 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        if (pState.cutScene) return;
+
         GetInputs();
         UpdateJumpVariables();
 
-        if (pState.dashing) return;
+        if (pState.dashing || pState.healing) return;
         Flip();
         Move();
         Jump();
@@ -257,7 +259,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (pState.dashing) return;
+        if (pState.cutScene) return;
+        if (pState.dashing || pState.healing) return;
         Recoil();
     }
 
@@ -669,6 +672,23 @@ public class PlayerController : MonoBehaviour
 
         anim.SetBool(castingAniParm, false);
         pState.casting = false;
+    }
+
+    public IEnumerator WalkIntoNewScene(Vector2 _exitDir, float _delay)
+    {
+        if (_exitDir.y != 0)
+        {
+            rb.velocity = jumpForce * _exitDir;
+        }
+        if (_exitDir.x != 0)
+        {
+            xAxis = _exitDir.x > 0 ? 1 : -1;
+            Move();
+        }
+        Flip();
+
+        yield return new WaitForSeconds(_delay);
+        pState.cutScene = false;
     }
 
     /// <summary>
