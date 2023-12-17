@@ -278,7 +278,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: c3120e90a96874943a6a085360a04df8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -370,18 +370,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   groundCheckPoint: {fileID: 1323856143272888948}
-  groundCheckX: 0.5
+  groundCheckX: 0.4
   groundCheckY: 0.2
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
-  walkSpeed: 20
-  jumpForce: 45
+  walkSpeed: 13
+  jumpForce: 39
   minJumpSpeed: 3
   jumpBufferFrames: 8
   coyoteTime: 0.1
   maxAirJumps: 1
-  dashSpeed: 70
+  dashSpeed: 60
   dashTime: 0.2
   dashCooldown: 0.35
   dashEffect: {fileID: 3169008056755378124, guid: df716c09abbc44a42a06f15f5e80cf61, type: 3}
@@ -404,7 +404,8 @@ MonoBehaviour:
   maxHealth: 10
   invincibleTime: 1
   bloodSpurt: {fileID: 3686910940587795319, guid: 1db796288cf25da49b2b34745adb6494, type: 3}
-  hitFlashSpeed: 1
+  canFlash: 1
+  flashSpeed: 0.1
   timeToHeal: 1
   mana: 1
   manaDrainSpeed: 0.2
@@ -419,6 +420,7 @@ MonoBehaviour:
   downSpellFireball: {fileID: 1323856141616915164}
   castBtnUpTime: 0.05
   pState: {fileID: 0}
+  rb: {fileID: 0}
 --- !u!95 &1323856142683473205
 Animator:
   serializedVersion: 5

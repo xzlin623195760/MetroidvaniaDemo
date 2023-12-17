@@ -6,8 +6,7 @@ using UnityEngine.UI;
 
 public class SceneFader : MonoBehaviour
 {
-    [SerializeField]
-    private float fadeTime;
+    public float fadeTime;
 
     private Image fadeOutUIImage;
 
@@ -17,10 +16,14 @@ public class SceneFader : MonoBehaviour
         Out
     }
 
+    private void Awake()
+    {
+        fadeOutUIImage = GetComponent<Image>();
+    }
+
     // Start is called before the first frame update
     private void Start()
     {
-        fadeOutUIImage = GetComponent<Image>();
     }
 
     // Update is called once per frame

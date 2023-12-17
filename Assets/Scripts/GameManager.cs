@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public string transitionedFromScene; // 存储上一个场景名
+    public Vector2 platformingRespawnPoint; // 复活点
 
     public static GameManager Instance { get; private set; }
 

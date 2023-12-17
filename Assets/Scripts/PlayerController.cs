@@ -184,7 +184,8 @@ public class PlayerController : MonoBehaviour
     /*******************************************************************************/
     [HideInInspector]
     public PlayerStateList pState;
-    private Rigidbody2D rb;
+    [HideInInspector]
+    public Rigidbody2D rb;
     private SpriteRenderer sr;
     private Animator anim;
 
@@ -247,6 +248,8 @@ public class PlayerController : MonoBehaviour
 
         GetInputs();
         UpdateJumpVariables();
+        RestoreTimeScale();
+        Heal();
 
         if (pState.dashing || pState.healing) return;
         Flip();
@@ -254,9 +257,7 @@ public class PlayerController : MonoBehaviour
         Jump();
         StartDash();
         Attack();
-        RestoreTimeScale();
         FlashWhileVinciable();
-        Heal();
         CastSpell();
     }
 
@@ -400,35 +401,36 @@ public class PlayerController : MonoBehaviour
 
             if (yAxis == 0 || yAxis < 0 && Grounded())
             {
-                Hit(sideAttackTransform, sideAttackArea, ref pState.recoilingX, recoilXSpeed);
+                int _recoilLeftOrRight = pState.lookingRight ? 1 : -1;
+                Hit(sideAttackTransform, sideAttackArea, ref pState.recoilingX, Vector2.right * _recoilLeftOrRight, recoilXSpeed);
                 Instantiate(slashEffect, sideAttackTransform);
             }
             else if (yAxis > 0)
             {
-                Hit(upAttackTransform, upAttackArea, ref pState.recoilingY, recoilYSpeed);
+                Hit(upAttackTransform, upAttackArea, ref pState.recoilingY, Vector2.up, recoilYSpeed);
                 SlashEffectAtAngle(slashEffect, upSlashAngle, upAttackTransform);
             }
             else if (yAxis < 0 && !Grounded())
             {
-                Hit(downAttackTransform, downAttackArea, ref pState.recoilingY, recoilYSpeed);
+                Hit(downAttackTransform, downAttackArea, ref pState.recoilingY, Vector2.down, recoilYSpeed);
                 SlashEffectAtAngle(slashEffect, downSlashAngle, downAttackTransform);
             }
         }
     }
 
-    private void Hit(Transform _attackTransform, Vector2 _attackArea, ref bool _recoilDir, float _recoilStrength)
+    private void Hit(Transform _attackTransform, Vector2 _attackArea, ref bool _recoilBool, Vector2 _recoilDir, float _recoilStrength)
     {
         Collider2D[] objectsToHit = Physics2D.OverlapBoxAll(_attackTransform.position, _attackArea, 0, attackLayer);
         if (objectsToHit.Length > 0)
         {
-            _recoilDir = true;
+            _recoilBool = true;
         }
         for (int i = 0; i < objectsToHit.Length; i++)
         {
             if (objectsToHit[i].GetComponent<Enemy>() != null)
             {
                 objectsToHit[i].GetComponent<Enemy>().EnemyHit
-                    (damage, (transform.position - objectsToHit[i].GetComponent<Enemy>().transform.position).normalized, _recoilStrength);
+                    (damage, _recoilDir, _recoilStrength);
                 if (objectsToHit[i].CompareTag("Enemy"))
                 {
                     Mana += manaGain;
