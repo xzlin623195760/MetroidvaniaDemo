@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private LayerMask whatIsGround; // 地面检测对象层
 
+    /*********************************** 相机设置 ********************************************/
+    [Header("Camera Stuff"), Space(5)]
+    [SerializeField]
+    private float playerFallSpeedTheshold = -10;
+
     /*********************************** 水平方向移动 ********************************************/
     [Header("Horizontal Movement Settings")]
     [SerializeField]
@@ -248,6 +253,7 @@ public class PlayerController : MonoBehaviour
 
         GetInputs();
         UpdateJumpVariables();
+        UpdateCameraYDampForPlayerFall();
         RestoreTimeScale();
         Heal();
 
@@ -729,6 +735,20 @@ public class PlayerController : MonoBehaviour
         else
         {
             return false;
+        }
+    }
+
+    private void UpdateCameraYDampForPlayerFall()
+    {
+        if (rb.velocity.y < playerFallSpeedTheshold && !CameraManager.Instance.isLerpingYDamping && !CameraManager.Instance.hasLerpingYDamping)
+        {
+            StartCoroutine(CameraManager.Instance.LerpYDamping(true));
+        }
+
+        if (rb.velocity.y >= 0 && !CameraManager.Instance.isLerpingYDamping && CameraManager.Instance.hasLerpingYDamping)
+        {
+            CameraManager.Instance.hasLerpingYDamping = false;
+            StartCoroutine(CameraManager.Instance.LerpYDamping(false));
         }
     }
 }
