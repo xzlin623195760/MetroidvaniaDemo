@@ -375,6 +375,7 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
+  playerFallSpeedTheshold: -10
   walkSpeed: 13
   jumpForce: 39
   minJumpSpeed: 3
@@ -463,6 +464,7 @@ MonoBehaviour:
   healing: 0
   casting: 0
   cutScene: 0
+  alive: 0
 --- !u!1 &1323856143272888951
 GameObject:
   m_ObjectHideFlags: 0

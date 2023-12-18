@@ -161,6 +161,7 @@ public class PlayerController : MonoBehaviour
     private float manaGain; // 法力获取值
     [SerializeField]
     private Image manaStorage;
+    private bool isHalfMana;
 
     /*********************************** 法术 ********************************************/
     [Header("Spell Settings"), Space(5)]
@@ -202,6 +203,7 @@ public class PlayerController : MonoBehaviour
     private string takeDamageAniParm = "TakeDamage";
     private string healingAniParm = "Healing";
     private string castingAniParm = "Casting";
+    private string deathAniParm = "Death";
 
     // 输入参数
     private float xAxis;
@@ -250,21 +252,32 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         if (pState.cutScene) return;
-
-        GetInputs();
+        if (pState.alive)
+        {
+            GetInputs();
+            Heal();
+        }
         UpdateJumpVariables();
         UpdateCameraYDampForPlayerFall();
         RestoreTimeScale();
-        Heal();
 
         if (pState.dashing || pState.healing) return;
-        Flip();
-        Move();
-        Jump();
-        StartDash();
-        Attack();
+        if (pState.alive)
+        {
+            Flip();
+            Move();
+            Jump();
+            StartDash();
+            Attack();
+            CastSpell();
+        }
         FlashWhileVinciable();
-        CastSpell();
+
+        // TODO: test
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            StartCoroutine(Death());
+        }
     }
 
     private void FixedUpdate()
@@ -534,8 +547,19 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(float _damage)
     {
-        Health -= Mathf.RoundToInt(_damage);
-        StartCoroutine(StopTakingDamage());
+        if (pState.alive)
+        {
+            Health -= Mathf.RoundToInt(_damage);
+            if (Health <= 0)
+            {
+                Health = 0;
+                StartCoroutine(Death());
+            }
+            else
+            {
+                StartCoroutine(StopTakingDamage());
+            }
+        }
     }
 
     private void FlashWhileVinciable()
@@ -638,7 +662,14 @@ public class PlayerController : MonoBehaviour
         {
             if (mana != value)
             {
-                mana = Mathf.Clamp(value, 0, 1);
+                if (!isHalfMana)
+                {
+                    mana = Mathf.Clamp(value, 0, 1);
+                }
+                else
+                {
+                    mana = Mathf.Clamp(value, 0, 0.5f);
+                }
                 manaStorage.fillAmount = mana;
             }
         }
@@ -701,6 +732,41 @@ public class PlayerController : MonoBehaviour
 
         anim.SetBool(castingAniParm, false);
         pState.casting = false;
+    }
+
+    private IEnumerator Death()
+    {
+        pState.alive = false;
+        Time.timeScale = 1;
+        GameObject _bloodSpurtParticles = Instantiate(bloodSpurt, transform.position, Quaternion.identity);
+        Destroy(_bloodSpurtParticles, 1.5f);
+        anim.SetTrigger(deathAniParm);
+
+        yield return new WaitForSeconds(0.9f);
+        StartCoroutine(UIManager.Instance.ActiveDeathScreen());
+
+        yield return new WaitForSeconds(0.9f);
+        Instantiate(GameManager.Instance.shade, transform.position, Quaternion.identity);
+    }
+
+    // 复活
+    public void Respawned()
+    {
+        if (!pState.alive)
+        {
+            pState.alive = true;
+            isHalfMana = true;
+            UIManager.Instance.SwitchManaState(UIManager.ManaState.HalfMana);
+            Mana = 0;
+            Health = maxHealth;
+            anim.Play("Player_Idle");
+        }
+    }
+
+    public void RestoreMana()
+    {
+        isHalfMana = false;
+        UIManager.Instance.SwitchManaState(UIManager.ManaState.FullMana);
     }
 
     public IEnumerator WalkIntoNewScene(Vector2 _exitDir, float _delay)

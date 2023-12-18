@@ -45,3 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transitionedFromScene: 
+  platformingRespawnPoint: {x: 0, y: 0}
+  respawnPoint: {x: 0, y: 0}
+  shade: {fileID: 0}
+  bench: {fileID: 0}
