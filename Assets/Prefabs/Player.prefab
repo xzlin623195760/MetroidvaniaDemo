@@ -459,12 +459,12 @@ MonoBehaviour:
   dashing: 0
   recoilingX: 0
   recoilingY: 0
-  lookingRight: 0
+  lookingRight: 1
   invincible: 0
   healing: 0
   casting: 0
   cutScene: 0
-  alive: 0
+  alive: 1
 --- !u!1 &1323856143272888951
 GameObject:
   m_ObjectHideFlags: 0

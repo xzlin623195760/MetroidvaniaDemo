@@ -209,6 +209,7 @@ public class PlayerController : MonoBehaviour
     private float xAxis;
     private float yAxis;
     private bool attack = false;
+    private bool openMap;
 
     public static PlayerController Instance;
 
@@ -255,6 +256,7 @@ public class PlayerController : MonoBehaviour
         if (pState.alive)
         {
             GetInputs();
+            ToggleMap();
             Heal();
         }
         UpdateJumpVariables();
@@ -301,6 +303,7 @@ public class PlayerController : MonoBehaviour
         xAxis = Input.GetAxisRaw("Horizontal");
         yAxis = Input.GetAxisRaw("Vertical");
         attack = Input.GetButtonDown("Attack");
+        openMap = Input.GetButton("Map");
 
         if (Input.GetButton("Cast/Heal"))
         {
@@ -309,6 +312,18 @@ public class PlayerController : MonoBehaviour
         else
         {
             castOrHealTimer = 0;
+        }
+    }
+
+    private void ToggleMap()
+    {
+        if (openMap)
+        {
+            UIManager.Instance.MapHandler.SetActive(true);
+        }
+        else
+        {
+            UIManager.Instance.MapHandler.SetActive(false);
         }
     }
 
@@ -631,8 +646,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetButton("Cast/Heal") && castOrHealTimer > castBtnUpTime && Mana > 0 && Health < maxHealth && !pState.jumping && !pState.dashing)
         {
-            Debug.Log($"castTimer {castOrHealTimer}");
-
+            //Debug.Log($"Heal Timer: {castOrHealTimer}");
             pState.healing = true;
             anim.SetBool(healingAniParm, true);
 
@@ -682,7 +696,8 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetButtonUp("Cast/Heal") && castOrHealTimer <= castBtnUpTime && timeSinceCast >= timeBetweenCast && Mana >= manaSpellCast)
         {
-            Debug.Log($"castTimer {castOrHealTimer}");
+            //Debug.Log($"Cast Timer: {castOrHealTimer}");
+            castOrHealTimer = 0;
             pState.casting = true;
             timeSinceCast = 0;
             StartCoroutine(CastCoroutine());
