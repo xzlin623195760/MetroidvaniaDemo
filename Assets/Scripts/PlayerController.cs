@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviour
     private float manaGain; // 法力获取值
     [SerializeField]
     private Image manaStorage;
-    private bool isHalfMana;
+    public bool isHalfMana;
 
     /*********************************** 法术 ********************************************/
     [Header("Spell Settings"), Space(5)]
@@ -243,10 +243,13 @@ public class PlayerController : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
 
+        SaveData.Instance.LoadPlayerData();
         gravity = rb.gravityScale;
-        Health = maxHealth;
-        Mana = mana;
+        //Health = maxHealth;
+        //Mana = mana;
         manaStorage.fillAmount = Mana;
+        UIManager.ManaState _curManaState = isHalfMana ? UIManager.ManaState.HalfMana : UIManager.ManaState.FullMana;
+        UIManager.Instance.SwitchManaState(_curManaState);
     }
 
     // Update is called once per frame
@@ -669,7 +672,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private float Mana
+    public float Mana
     {
         get { return mana; }
         set
@@ -761,7 +764,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(UIManager.Instance.ActiveDeathScreen());
 
         yield return new WaitForSeconds(0.9f);
-        Instantiate(GameManager.Instance.shade, transform.position, Quaternion.identity);
+        Instantiate(GameManager.Instance.playerShade, transform.position, Quaternion.identity);
     }
 
     // 复活

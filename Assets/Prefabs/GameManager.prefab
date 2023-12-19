@@ -47,5 +47,5 @@ MonoBehaviour:
   transitionedFromScene: 
   platformingRespawnPoint: {x: 0, y: 0}
   respawnPoint: {x: 0, y: 0}
-  shade: {fileID: 0}
+  playerShade: {fileID: 2512325583790479251, guid: 5ab529147e76bbf4d8ba599ca6e6e764, type: 3}
   bench: {fileID: 0}

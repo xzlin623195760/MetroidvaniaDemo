@@ -25,6 +25,7 @@ public class PlayerShade : Enemy
         {
             Instance = this;
         }
+        SaveData.Instance.SavePlayerShadeData();
     }
 
     protected override void Start()
@@ -91,6 +92,7 @@ public class PlayerShade : Enemy
         {
             //anim.SetTrigger("Death");
             PlayerController.Instance.RestoreMana();
+            SaveData.Instance.SavePlayerData();
             anim.SetTrigger("Death");
             Destroy(gameObject, 0.5f);
         }
