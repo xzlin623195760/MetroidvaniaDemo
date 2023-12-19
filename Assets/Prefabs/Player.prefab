@@ -32,7 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1323856142683473207}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
 --- !u!212 &1323856141616915160
 SpriteRenderer:
@@ -152,7 +152,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1323856142683473207}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1323856142241805100
 GameObject:
@@ -183,7 +183,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1323856142683473207}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1323856142591744728
 GameObject:
@@ -214,7 +214,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1323856142683473207}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1323856142683473211
 GameObject:
@@ -250,6 +250,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7102723431010881520}
   - {fileID: 1323856143272888948}
   - {fileID: 1323856141871704669}
   - {fileID: 1323856142591744729}
@@ -370,8 +371,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   groundCheckPoint: {fileID: 1323856143272888948}
-  groundCheckX: 0.4
-  groundCheckY: 0.2
+  groundCheckX: 0.2
+  groundCheckY: 0.1
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
@@ -382,6 +383,14 @@ MonoBehaviour:
   jumpBufferFrames: 8
   coyoteTime: 0.1
   maxAirJumps: 1
+  wallSlidingSpeed: 2
+  wallCheck: {fileID: 7102723431010881520}
+  wallCheckDistance: 0.2
+  whatIsWall:
+    serializedVersion: 2
+    m_Bits: 8
+  wallJumpingDuration: 0.1
+  wallJumpingPower: {x: 15, y: 45}
   dashSpeed: 60
   dashTime: 0.2
   dashCooldown: 0.35
@@ -402,7 +411,7 @@ MonoBehaviour:
   recoilXSpeed: 32
   recoilYSpeed: 32
   health: 0
-  maxHealth: 10
+  maxHealth: 5
   invincibleTime: 1
   bloodSpurt: {fileID: 3686910940587795319, guid: 1db796288cf25da49b2b34745adb6494, type: 3}
   canFlash: 1
@@ -412,6 +421,7 @@ MonoBehaviour:
   manaDrainSpeed: 0.2
   manaGain: 0.3
   manaStorage: {fileID: 0}
+  isHalfMana: 0
   manaSpellCast: 0.1
   timeBetweenCast: 0.5
   spellDamage: 5
@@ -490,6 +500,37 @@ Transform:
   m_GameObject: {fileID: 1323856143272888951}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -1.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1323856142683473207}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8877178748145465876
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7102723431010881520}
+  m_Layer: 0
+  m_Name: Wall Check Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7102723431010881520
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8877178748145465876}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.69, y: -0.69, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

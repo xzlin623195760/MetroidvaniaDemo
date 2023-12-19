@@ -51,6 +51,27 @@ public class PlayerController : MonoBehaviour
 
     private float gravity; //´æ´¢ÖØÁ¦
 
+    /*********************************** ÅÀÇ½Ìø ********************************************/
+    [Header("Wall Jump Settings"), Space(5)]
+    [SerializeField]
+    private float wallSlidingSpeed = 2f; // ÌùÇ½»¬ÂäËÙ¶È
+
+    [SerializeField]
+    private Transform wallCheck; // Ç½±Ú¼ì²â
+    [SerializeField]
+    private float wallCheckDistance = 0.2f;
+    [SerializeField]
+    private LayerMask whatIsWall;
+
+    [SerializeField]
+    private float wallJumpingDuration;
+    [SerializeField]
+    private Vector2 wallJumpingPower;
+
+    private float wallJumpingDirection;
+    private bool isWallSilding;
+    private bool isWallJumping;
+
     /*********************************** ³å´Ì ********************************************/
     [Header("Dash Settings"), Space(5)]
     [SerializeField]
@@ -256,22 +277,34 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         if (pState.cutScene) return;
+
         if (pState.alive)
         {
             GetInputs();
             ToggleMap();
+        }
+
+        UpdateJumpVariables();
+        RestoreTimeScale();
+        UpdateCameraYDampForPlayerFall();
+
+        if (pState.alive)
+        {
             Heal();
         }
-        UpdateJumpVariables();
-        UpdateCameraYDampForPlayerFall();
-        RestoreTimeScale();
 
         if (pState.dashing || pState.healing) return;
         if (pState.alive)
         {
-            Flip();
-            Move();
-            Jump();
+            if (!isWallJumping)
+            {
+                Flip();
+                Move();
+                Jump();
+            }
+
+            WallSilde();
+            WallJump();
             StartDash();
             Attack();
             CastSpell();
@@ -289,6 +322,7 @@ public class PlayerController : MonoBehaviour
     {
         if (pState.cutScene) return;
         if (pState.dashing || pState.healing) return;
+
         Recoil();
     }
 
@@ -426,6 +460,59 @@ public class PlayerController : MonoBehaviour
         {
             jumpBufferCounter--;
         }
+    }
+
+    private bool Walled()
+    {
+        return Physics2D.OverlapCircle(wallCheck.position, wallCheckDistance, whatIsWall);
+    }
+
+    private void WallSilde()
+    {
+        if (Walled() && !Grounded() && xAxis != (!pState.lookingRight ? 1 : -1))
+        {
+            isWallSilding = true;
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
+        }
+        else
+        {
+            isWallSilding = false;
+        }
+    }
+
+    private void WallJump()
+    {
+        if (isWallSilding)
+        {
+            isWallJumping = false;
+            wallJumpingDirection = !pState.lookingRight ? 1 : -1;
+            CancelInvoke(nameof(StopWallJumping));
+        }
+
+        if (Input.GetButtonDown("Jump") && isWallSilding)
+        {
+            isWallJumping = true;
+            rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
+            // ÖØÖÃ³å´Ì´ÎÊýºÍ¿ÕÖÐÌøÔ¾´ÎÊý
+            dashed = false;
+            airJumpCounter = 0;
+
+            // ÌøÔ¾Ê±½ÇÉ«³¯Ïò
+            if ((pState.lookingRight && transform.eulerAngles.y == 0)
+                || (!pState.lookingRight && transform.eulerAngles.y != 0))
+            {
+                pState.lookingRight = !pState.lookingRight;
+                int _yRotation = pState.lookingRight ? 0 : 180;
+                transform.eulerAngles = new Vector2(transform.eulerAngles.x, _yRotation);
+            }
+
+            Invoke(nameof(StopWallJumping), wallJumpingDuration);
+        }
+    }
+
+    private void StopWallJumping()
+    {
+        isWallJumping = false;
     }
 
     private void Attack()
